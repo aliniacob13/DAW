@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace ArticlesApp.Models;
-//PASUL 1: useri si roluri
-public class ApplicationUser : IdentityUser
+namespace ArticlesApp.Models
 {
-    //pasul 6: useri si roluri
-    //un user posteaza mai multe articole
-    public virtual ICollection<Article>? Articles { get; set; }
-    //un user posteaza mai multe comentarii
-    public virtual ICollection<Comment>? Comments { get; set; } = [];
+    public class ApplicationUser : IdentityUser
+    {
+        // Produsele create sau propuse de utilizator
+        public virtual ICollection<Product>? Products { get; set; } = [];
+
+        // Review urile scrise de utilizator
+        public virtual ICollection<Review>? Reviews { get; set; } = [];
+    }
 }

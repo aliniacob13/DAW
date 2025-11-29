@@ -1,0 +1,46 @@
+@model IEnumerable<ArticlesApp.Models.Product>
+
+@{
+    ViewData["Title"] = "Produse";
+}
+
+<h2>Lista de produse</h2>
+
+<p>
+    <a asp-action="New" class="btn btn-primary">Produs nou</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Titlu</th>
+        <th>Preț</th>
+        <th>Stoc</th>
+        <th>Categorie</th>
+        <th>Rating mediu</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var p in Model)
+    {
+        <tr>
+            <td>@p.Title</td>
+            <td>@p.Price</td>
+            <td>@p.Stock</td>
+            <td>@p.Category?.CategoryName</td>
+            <td>
+                @{
+                    var rating = p.AverageRating;
+                }
+                @(rating > 0 ? rating.ToString("0.0") : "-")
+            </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">Detalii</a>
+                <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary">Editează</a>
+                <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger">Șterge</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

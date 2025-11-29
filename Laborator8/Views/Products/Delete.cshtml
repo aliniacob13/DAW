@@ -1,0 +1,30 @@
+@model ArticlesApp.Models.Product
+
+@{
+    ViewData["Title"] = "Șterge produs";
+}
+
+<h2>Șterge produs</h2>
+
+<h4>Ești sigur că vrei să ștergi acest produs?</h4>
+<hr />
+
+<dl class="row">
+    <dt class="col-sm-2">Titlu</dt>
+    <dd class="col-sm-10">@Model.Title</dd>
+
+    <dt class="col-sm-2">Preț</dt>
+    <dd class="col-sm-10">@Model.Price</dd>
+
+    <dt class="col-sm-2">Stoc</dt>
+    <dd class="col-sm-10">@Model.Stock</dd>
+
+    <dt class="col-sm-2">Categorie</dt>
+    <dd class="col-sm-10">@Model.Category?.CategoryName</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Șterge</button>
+    <a asp-action="Index" class="btn btn-secondary">Renunță</a>
+</form>

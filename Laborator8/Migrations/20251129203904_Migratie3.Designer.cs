@@ -4,6 +4,7 @@ using ArticlesApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArticlesApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251129203904_Migratie3")]
+    partial class Migratie3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,6 +121,9 @@ namespace ArticlesApp.Migrations
                     b.Property<string>("ApplicationUserId")
                         .HasColumnType("varchar(255)");
 
+                    b.Property<double?>("AverageRating")
+                        .HasColumnType("double");
+
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
@@ -125,8 +131,10 @@ namespace ArticlesApp.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("ImagePath")
-                        .HasColumnType("longtext");
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10,2)");

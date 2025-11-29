@@ -1,0 +1,64 @@
+@model ArticlesApp.Models.Product
+
+@{
+    ViewData["Title"] = "Produs nou";
+}
+
+<h2>Produs nou</h2>
+
+<form asp-action="New" method="post">
+    <!-- sumar de validare, ca să vezi eventualele erori -->
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ImagePath" class="form-label"></label>
+        <input asp-for="ImagePath" class="form-control"
+               placeholder="ex: image1.jpg" />
+        <small class="form-text text-muted">
+            Fișierul trebuie să existe în wwwroot/images/products, de exemplu
+            wwwroot/images/products/image1.jpg
+        </small>
+        <span asp-validation-for="ImagePath" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Price" class="form-label"></label>
+        <input asp-for="Price" class="form-control" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Stock" class="form-label"></label>
+        <input asp-for="Stock" class="form-control" />
+        <span asp-validation-for="Stock" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Categorie</label>
+        <select asp-for="CategoryId"
+                asp-items="ViewBag.Categories"
+                class="form-select">
+            <option value="">Alege categoria</option>
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Salvează</button>
+    <a asp-action="Index" class="btn btn-secondary">Renunță</a>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

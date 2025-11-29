@@ -51,8 +51,8 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Articles}/{action=Index}/{id?}")
+        name: "default",
+        pattern: "{controller=Products}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 app.MapRazorPages()
