@@ -1,0 +1,25 @@
+@model OnlineShop.Models.Category
+
+<h3>Ești sigur că vrei să ștergi această categorie?</h3>
+<div class="alert alert-warning">
+    <strong>Atenție!</strong> Ștergerea categoriei va șterge automat și toate produsele asociate!
+</div>
+
+<div>
+    <h4>Detalii Categorie</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            Nume:
+        </dt>
+        <dd class = "col-sm-10">
+            @Model.Name
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Șterge Definitiv" class="btn btn-danger" /> |
+        <a asp-action="Index" class="btn btn-secondary">Renunță</a>
+    </form>
+</div>

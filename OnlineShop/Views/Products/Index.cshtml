@@ -1,0 +1,39 @@
+@model IEnumerable<OnlineShop.Models.Product>
+
+<h1>Lista Produse</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Adaugă Produs Nou</a>
+</p>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Imagine</th>
+        <th>Titlu</th>
+        <th>Preț</th>
+        <th>Categorie</th>
+        <th>Stoc</th>
+        <th>Acțiuni</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                <img src="@item.ImageUrl" style="width: 100px; height: 100px; object-fit: cover;" alt="Imagine produs" />
+            </td>
+            <td>@item.Title</td>
+            <td>@item.Price RON</td>
+            <td>
+                @item.Category.Name
+            </td>
+            <td>@item.Stock</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Șterge</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
