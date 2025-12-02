@@ -1,0 +1,127 @@
+@model OnlineShop.Models.Product
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@using System.Security.Claims
+@{
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var canManageProduct = User.IsInRole("Admin") || Model.UserId == currentUserId;
+}
+<br />
+<div class="card">
+    <partial name="ProdusInfo" model="Model"></partial>
+    @if (canManageProduct)
+    {
+        <div class="d-flex flex-row justify-content-between">
+
+            <a class="btn btn-success"
+               asp-controller="Products"
+               asp-action="Edit"
+               asp-route-id="@Model.Id">
+                Editeaza produs
+            </a>
+
+            <form asp-controller="Products"
+                  asp-action="Delete"
+                  asp-route-id="@Model.Id"
+                  method="post"
+                  onsubmit="return confirm('Esti sigur ca vrei sa stergi acest produs?');">
+                <button type="submit" class="btn btn-danger">Sterge produs</button>
+            </form>
+
+        </div>
+    }
+</div>
+
+<br />
+<br />
+
+@* Afisare review uri impreuna cu butoanele de editare si stergere *@
+<div id="reviews-container" class="mb-3">
+@foreach (var review in Model.Reviews)
+{
+    <div class="container mb-3">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Rating:</strong> @review.Rating</p>
+                        <p class="mb-1"><strong>Comentariu:</strong> @review.Comment</p>
+                        <p class="text-muted mb-3"><small>@review.DatePosted</small></p>
+
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-outline-primary btn-sm"
+                               asp-controller="Reviews"
+                               asp-action="Edit"
+                               asp-route-id="@review.Id">
+                                <i class="bi bi-pencil-square"></i> Editeaza
+                            </a>
+
+                            <form method="post"
+                                  asp-controller="Reviews"
+                                  asp-action="Delete"
+                                  asp-route-id="@review.Id"
+                                  onsubmit="return confirm('Sigur vrei sa stergi acest review?');">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">
+                                    <i class="bi bi-trash"></i> Sterge
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+</div>
+@* Formular inline pentru adaugarea unui review nou *@
+<div class="container mt-4" id="zona-review">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    Adauga un review
+                </div>
+                <div class="card-body">
+                    <form method="post"
+                          id="review-form"
+                          asp-controller="Reviews"
+                          asp-action="Create">
+
+                        @* Anti forgery vine automat cu form tag helper *@
+
+                        @* Legam review ul de produs *@
+                        <input type="hidden" name="ProductId" value="@Model.Id" />
+
+                        <div asp-validation-summary="All"  class="text-danger mb-3 validation-summary"></div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Rating (1 - 5)</label>
+                            <select name="Rating" class="form-select">
+                                <option value="">Fara rating</option>
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Comentariu</label>
+                            <textarea name="Comment"
+                  class="form-control"
+                  rows="3"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            Adauga review
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+   
+}

@@ -1,138 +1,170 @@
-using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using OnlineShop.Models;
-namespace OnlineShop.Controllers;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Data;
-public class CategoriesController : Controller
+using OnlineShop.Models;
+
+namespace OnlineShop.Controllers
 {
-    private readonly ApplicationDbContext _context; // Baza de date
+    public class CategoriesController : Controller
+    {
+        private readonly ApplicationDbContext db;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-    public CategoriesController(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-
-    // PASUL 1: Afișează formularul gol (GET)
-    [HttpGet]
-    public IActionResult Create()
-    {
-        return View();
-    }
-
-    // PASUL 2: Primește datele completate și le salvează (POST)
-    [HttpPost]
-    [ValidateAntiForgeryToken] // Securitate
-    public async Task<IActionResult> Create(Category category)
-    {
-        // Verificare custom pentru cerința "Nume Unic"
-        bool existaDeja = _context.Categories.Any(c => c.Name == category.Name);
-        if (existaDeja)
+        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
-            ModelState.AddModelError("Name", "Această categorie există deja!");
-        }
-        
-        ModelState.Remove("Products");
-        
-        if (ModelState.IsValid)
-        {
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index)); // Te întoarce la listă
-        }
-        
-        
-        
-        // Dacă sunt erori, reafișează formularul cu mesajele de eroare
-        return View(category);
-    }
-    
-    // GET: Categories/Index
-    public async Task<IActionResult> Index()
-    {
-        // Simplu: Luăm toate categoriile din bază
-        return View(await _context.Categories.ToListAsync());
-    }
-    
-    // 1. GET: Afișează formularul cu datele existente
-    [HttpGet]
-    public async Task<IActionResult> Edit(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound(); // Dacă nu primim ID, dăm eroare
+            db = context;
+            _userManager = userManager;
         }
 
-        // Căutăm categoria în baza de date după ID
-        var category = await _context.Categories.FindAsync(id);
-
-        if (category == null)
+        // GET /Categories
+        public ActionResult Index()
         {
-            return NotFound(); // Dacă ID-ul nu există în bază
+            if (TempData.ContainsKey("message"))
+            {
+                ViewBag.message = TempData["message"];
+            }
+
+            var categories = db.Categories
+                .OrderBy(c => c.Name)
+                .ToList();
+
+            return View(categories);
         }
 
-        return View(category); // Trimitem categoria găsită către View
-    }
-
-// 2. POST: Primește datele modificate și le salvează
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, Category category)
-    {
-        if (id != category.Id)
+        // GET /Categories/New  - doar Admin sau Editor pot vedea formularul
+        [Authorize(Roles = "Admin,Editor")]
+        public ActionResult New()
         {
-            return NotFound(); // Verificare de securitate
+            return View("Create");
         }
-        ModelState.Remove("Products");
-        if (ModelState.IsValid)
+
+        // POST /Categories/New - doar Admin sau Editor pot crea
+        [HttpPost]
+        [Authorize(Roles = "Admin,Editor")]
+        [ValidateAntiForgeryToken]
+        public ActionResult New(Category cat)
         {
+            if (ModelState.IsValid)
+            {
+                // Creatorul devine proprietar
+                cat.UserId = _userManager.GetUserId(User);
+
+                db.Categories.Add(cat);
+                db.SaveChanges();
+                TempData["message"] = "Categoria a fost adaugata";
+                return RedirectToAction("Index");
+            }
+
+            return View("Create", cat);
+        }
+
+        // GET /Categories/Edit/{id}
+        [Authorize] // trebuie sa fii logat macar
+        public ActionResult Edit(int id)
+        {
+            var category = db.Categories.Find(id);
+            if (category is null)
+            {
+                return NotFound();
+            }
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            // Admin sau Editor pot edita orice, User doar ce este al lui
+            if (User.IsInRole("Admin") ||
+                User.IsInRole("Editor") ||
+                category.UserId == currentUserId)
+            {
+                return View(category);
+            }
+
+            TempData["message"] = "Nu aveti dreptul sa editati aceasta categorie.";
+            return RedirectToAction("Index");
+        }
+
+        // POST /Categories/Edit/{id}
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, Category requestedCategory)
+        {
+            var category = db.Categories.Find(id);
+            if (category is null)
+            {
+                return NotFound();
+            }
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (!(User.IsInRole("Admin") ||
+                  User.IsInRole("Editor") ||
+                  category.UserId == currentUserId))
+            {
+                TempData["message"] = "Nu aveti dreptul sa editati aceasta categorie.";
+                return RedirectToAction("Index");
+            }
+
+            if (ModelState.IsValid)
+            {
+                category.Name = requestedCategory.Name;
+                db.SaveChanges();
+                TempData["message"] = "Categoria a fost modificata!";
+                return RedirectToAction("Index");
+            }
+
+            return View(requestedCategory);
+        }
+
+        // POST /Categories/Delete/{id}
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete(int id)
+        {
+            var category = db.Categories.Find(id);
+
+            if (category == null)
+            {
+                TempData["message"] = $"Categoria cu id {id} nu a fost gasita.";
+                return RedirectToAction("Index");
+            }
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (!(User.IsInRole("Admin") ||
+                  User.IsInRole("Editor") ||
+                  category.UserId == currentUserId))
+            {
+                TempData["message"] = "Nu aveti dreptul sa stergeti aceasta categorie.";
+                return RedirectToAction("Index");
+            }
+
             try
             {
-                _context.Update(category); // Marchează obiectul ca modificat
-                await _context.SaveChangesAsync(); // Trimite UPDATE în SQL
+                db.Categories.Remove(category);
+                db.SaveChanges();
+                TempData["message"] = "Categoria a fost stearsa!";
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!_context.Categories.Any(e => e.Id == category.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                TempData["message"] = "Categoria nu a putut fi stearsa. Motiv: " + ex.Message;
             }
-            return RedirectToAction(nameof(Index));
+
+            return RedirectToAction("Index");
         }
-        return View(category);
-    }
-    // 1. GET: Pagina de confirmare
-    public async Task<IActionResult> Delete(int? id)
-    {
-        if (id == null) return NotFound();
 
-        var category = await _context.Categories
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (category == null) return NotFound();
-
-        return View(category);
-    }
-
-// 2. POST: Ștergerea efectivă
-// Observă: Numele metodei este DeleteConfirmed, dar ActionName este "Delete"
-// Facem asta pentru că C# nu permite două metode cu aceiași parametri (int id).
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
-    {
-        var category = await _context.Categories.FindAsync(id);
-        if (category != null)
+        // Optional: Show ramane public
+        public ActionResult Show(int id)
         {
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
+            var category = db.Categories.Find(id);
+            if (category is null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
         }
-    
-        return RedirectToAction(nameof(Index));
     }
 }
