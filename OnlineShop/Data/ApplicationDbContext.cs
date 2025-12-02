@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using OnlineShop.Models; // <--- 1. Asta rezolvă eroarea că nu găsește Category/Product
-
-namespace OnlineShop.Data // <--- 2. Asta rezolvă eroarea din Program.cs
+using OnlineShop.Models; 
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+namespace OnlineShop.Data 
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext :  IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

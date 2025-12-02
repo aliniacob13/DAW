@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
 namespace OnlineShop.Models;
 public class Product
 {
@@ -36,7 +38,9 @@ public class Product
     [Required(ErrorMessage = "Selectarea unei categorii este obligatorie.")]
     public int CategoryId { get; set; }
     public Category Category { get; set; }
-
+    
+    public string? UserId { get; set; }
+    public virtual ApplicationUser? User { get; set; } //un articol apartine unui singur user
     // Lista de review-uri
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
 
@@ -62,4 +66,7 @@ public class Product
             return Math.Round(ratings.Average(), 1); // Returnăm media cu o zecimală (ex: 4.5)
         }
     }
+    
+    [NotMapped]
+    public IEnumerable<SelectListItem>Categ { get; set; }=Enumerable.Empty<SelectListItem>();
 }

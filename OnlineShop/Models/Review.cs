@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
 namespace OnlineShop.Models;
 public class Review : IValidatableObject
 {
@@ -16,6 +18,10 @@ public class Review : IValidatableObject
 
     // --- RELAȚII (Foreign Key) ---
     public int ProductId { get; set; }
+    
+    public string? UserId { get; set; }
+    public virtual ApplicationUser? User { get; set; }
+    [ValidateNever]
     public Product Product { get; set; }
 
     // --- VALIDARE PERSONALIZATĂ ---
@@ -26,8 +32,7 @@ public class Review : IValidatableObject
         if (Rating == null && string.IsNullOrWhiteSpace(Comment))
         {
             yield return new ValidationResult(
-                "Trebuie să oferiți fie un rating, fie un comentariu. Review-ul nu poate fi gol.",
-                new[] { nameof(Rating), nameof(Comment) }
+                "Nu se poate posta un review gol, trebuie cel putin adaugata o nota sau un comentariu."
             );
         }
     }
